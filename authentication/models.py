@@ -56,8 +56,8 @@ class CustomFormatDateField(models.DateField):
 
 class BaseProfile(BaseModel):
     bio = models.TextField(max_length=500, blank=True)
-    image = models.ImageField(upload_to='profiles/')
-    address = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    address = models.CharField(max_length=100, blank=True)
     birth_date = CustomFormatDateField(null=True, blank=True)
 
 

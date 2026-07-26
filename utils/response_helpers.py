@@ -6,8 +6,9 @@ def success_response(data=None, message="Success", status_code=200):
         'message':message
     }
     if data is not None:
+        response['count']=len(data) if isinstance(data, list) else 1
         response['data'] = data
-        return Response(response, status=status_code)
+    return Response(response, status=status_code)
 
     
 

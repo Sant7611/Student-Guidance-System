@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'django_filters',
     'authentication',
@@ -55,11 +56,13 @@ INSTALLED_APPS = [
     'assessment',
     'drf_yasg',
     'django_celery_results',
+    'dashboard'
     
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -205,14 +208,20 @@ MEDIA_URL = 'media/'
 
 
 # #email setting(gmail)
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = config('EMAIL_PORT', default=587)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='sbohara579@gmail.com')  # your-email@gmail.com
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')  # Gmail app password
+# EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+# EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+# EMAIL_PORT = config('EMAIL_PORT', default=587)
+# EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True)
+# EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='sbohara579@gmail.com')  # your-email@gmail.com
+# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')  # Gmail app password
 # DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-#email setting(gmail)
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER='sbohara579@gmail.com' #gmail should be 2 step verification
+EMAIL_HOST_PASSWORD = 'iqli ybog tbbx mmez' #use app password here.
 
 
 # DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

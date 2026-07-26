@@ -10,7 +10,7 @@ router.register(r'auth/counselors', counselor_register_view.CounselorViewSet, ba
 
 urlpatterns = [
     path('auth/login/',login_view.LoginView.as_view(), name='login' ),
-    # path('auth/counselors/register/',counselor_register_view.CounselorRegisterView.as_view(), name='counselor_register' ),
+    # path('auth/counselors/register/',counselor_register_view.CounselorViewSet.as_view(), name='counselor_register' ),
     # path('auth/mentors/register/',mentor_register_view.MentorViewSet.as_view(), name='mentor_register' ),
     path('', include(router.urls)),
     path('auth/logout/',logout_view.LogoutView.as_view(), name='logout' ),

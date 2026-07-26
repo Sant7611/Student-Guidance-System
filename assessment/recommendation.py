@@ -1,6 +1,6 @@
 # recommendation/services/recommendation_engine.py
-from assessment.models import StudentSkillResult
-from career.models import CareerSkill, Career, CareerPath
+from assessment.models import StudentAssessment
+from career.models import Career, CareerPath
 
 
 class CareerRecommendationEngine:
@@ -15,23 +15,26 @@ class CareerRecommendationEngine:
 
     def _get_student_skills(self):
         """Get latest skill scores from completed assessments."""
-        results = StudentSkillResult.objects.filter(
-            student_assessment__student=self.student,
-            student_assessment__status='completed'
-        ).select_related('skill')
+        latest_assessment = StudentAssessment.objects.filter(
+            student=self.student,
+            status='completed',
+            score__gte=60
+        ).order_by('-completed_at').first()
 
+        if not latest_assessment:
+            return {}
+
+        results = latest_assessment.skill_results.select_related('skill')
         return {result.skill_id: result.score for result in results}
 
     def calculate_match(self, career):
         """
         Returns: (match_score 0-100, gap_skills list, is_ready bool)
         """
-        required = career.career_skills.filter(
-            is_deleted=False
-        ).select_related('skill')
+        required = career.career_skills.filter(is_deleted=False).select_related('skill')
 
         if not required.exists():
-            return 0, [], False
+            return 0, [], False  # ✅ tuple, consistent with caller
 
         total_weighted = 0
         total_weight = 0
@@ -40,12 +43,10 @@ class CareerRecommendationEngine:
         for req in required:
             student_score = self.student_skills.get(req.skill_id, 0)
 
-            # Match ratio (capped at 1.0 = 100%)
             match = min(student_score / req.minimum_score, 1.0) if req.minimum_score > 0 else 1.0
             total_weighted += match * req.weightage
             total_weight += req.weightage
 
-            # Track gaps
             if student_score < req.minimum_score:
                 gap_skills.append({
                     'skill_id': req.skill_id,
@@ -53,16 +54,16 @@ class CareerRecommendationEngine:
                     'required_score': req.minimum_score,
                     'student_score': student_score,
                     'gap': req.minimum_score - student_score,
-                    'weightage': req.weightage
+                    'weightage': req.weightage,
                 })
 
         match_score = round((total_weighted / total_weight) * 100) if total_weight > 0 else 0
         is_ready = len(gap_skills) == 0
 
-        return match_score, gap_skills, is_ready
+        return match_score, gap_skills, is_ready  # ✅ tuple
 
     def get_recommendations(self, min_match=30, top_n=5):
-        careers = Career.objects.filter(is_deleted=False)
+        careers = Career.objects.filter(is_deleted=False).prefetch_related('career_skills__skill')
         results = []
 
         for career in careers:
@@ -78,7 +79,6 @@ class CareerRecommendationEngine:
                     'total_skills': career.career_skills.filter(is_deleted=False).count(),
                     'met_skills': career.career_skills.filter(is_deleted=False).count() - len(gaps),
                     'gap_skills': sorted(gaps, key=lambda x: -x['weightage'])[:3],
-                    # Pull learning path if career is recommended
                     'learning_path': self._get_learning_path(career) if match_score >= 60 else []
                 })
 
@@ -86,7 +86,6 @@ class CareerRecommendationEngine:
         return results[:top_n]
 
     def _get_learning_path(self, career):
-        """Fetch the pre-defined course sequence for this career."""
         paths = CareerPath.objects.filter(
             career=career,
             is_deleted=False

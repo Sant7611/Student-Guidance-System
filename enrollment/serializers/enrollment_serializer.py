@@ -13,22 +13,38 @@ class EnrollmentCreateSerializer(serializers.ModelSerializer):
         model = Enrollment
         fields = ['student', 'batch', 'payment_status', 'status']
         
+        
+    def validate(self, attrs):
+        student = attrs.get('student')
+        batch = attrs.get('batch')
+        
+        if Enrollment.objects.filter(student=student, batch=batch, is_deleted=False).exists():
+            raise serializers.ValidationError("This student is already enrolled in the selected batch.")
+        
+        return attrs
+    
     def validate_batch(self, batch):
-        if batch.current_enrollment >= batch.max_students:
+        if batch.current_enrollments >= batch.max_seats:
             raise serializers.ValidationError("This batch has reached its maximum capacity.")
+        
         return batch
     
+    def validate_student(self, student):
+        if student.role != 'student':
+            raise serializers.ValidationError("The selected user is not a student.")
+        return student
+    
+
     
     @transaction.atomic
     def create(self, validated_data):
-        batch = validated_data['batch'].pop
+        batch = validated_data.pop('batch')
         batch = CourseBatch.objects.select_for_update().get(id=batch.id)
-        if batch.current_enrollment >= batch.max_students:
+        if batch.current_enrollments >= batch.max_seats:
             raise serializers.ValidationError("This batch has reached its maximum capacity.")
-        
         enrollment = Enrollment.objects.create(batch=batch, **validated_data)
-        batch.current_enrollment += 1
-        batch.save(update_fields=['current_enrollment'])
+        batch.current_enrollments += 1
+        batch.save(update_fields=['current_enrollments'])
         return enrollment
     
 

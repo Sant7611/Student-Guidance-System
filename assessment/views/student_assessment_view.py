@@ -1,6 +1,5 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from skill.models import Skill
 from assessment.models import StudentAssessment, AssessmentSkill, StudentSkillResult
 from assessment.serializers.student_assessment_serializer import (
     StudentAssessmentReadSerializer,
@@ -8,7 +7,7 @@ from assessment.serializers.student_assessment_serializer import (
     StudentAssessmentSubmitSerializer
 )
 from utils.response_helpers import success_response, error_response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 
 
 
@@ -16,8 +15,9 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing student assessment attempts.
     """
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     queryset = StudentAssessment.objects.all()
+    ordering = ['-created_at']
     
     def get_serializer_class(self):
         if self.action == 'start':

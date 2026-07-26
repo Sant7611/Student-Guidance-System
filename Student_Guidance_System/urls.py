@@ -51,6 +51,7 @@ urlpatterns = [
     path('api/', include('skill.urls')),
     path('api/', include('career.urls')),
     path('api/', include('assessment.urls')),
+    path('api/', include('dashboard.urls')),
 ]
 
 

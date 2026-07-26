@@ -11,3 +11,11 @@ class CourseBatchSerializer(serializers.ModelSerializer):
         
     def get_course_details(self, obj):
         return GetMiniCourseSerializer(obj.course).data
+    
+
+class GetMiniCourseBatchSerializer(serializers.ModelSerializer):
+    course = GetMiniCourseSerializer(read_only=True)
+    mentor = serializers.CharField(source='mentor.username', read_only=True)
+    class Meta:
+        model = CourseBatch
+        fields = ['id', 'batch_code','status', 'schedule', 'mentor', 'course' ]

@@ -7,11 +7,7 @@
 
 
 
-#using apiview
-from rest_framework.views import APIView
 from authentication.serializers.login_serializer import LoginSerializer
-from rest_framework.response import Response
-from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from utils.response_helpers import error_response, success_response
 from rest_framework.permissions import AllowAny
@@ -28,11 +24,15 @@ class LoginView(generics.GenericAPIView):
             return error_response(errors=serializer.errors,status_code=400 )
         user = serializer.validated_data['user']
         refresh = RefreshToken.for_user(user)
+        print(user.role)
+        print(user.id)
+        print(user.username)
         data={
             'user':{
                 'user_id':user.id,
                 'username':user.username,
-                'email':user.email
+                'email':user.email,
+                'role':user.role
             },
             'refresh':str(refresh),
             'access':str(refresh.access_token)

@@ -18,7 +18,7 @@ class Enrollment(BaseModel):
         ("paid", "Paid"),
         ("refunded", "Refunded"),
     )
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments', limit_choices_to={'role': 'student'})
     batch = models.ForeignKey(CourseBatch, on_delete=models.CASCADE, related_name='enrollments') 
     enrolled_at = models.DateTimeField(auto_now_add=True)
     payment_status= models.CharField(max_length=20, choices=PAYMENT_STATUS, default="pending")
