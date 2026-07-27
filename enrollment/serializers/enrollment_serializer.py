@@ -11,7 +11,7 @@ class EnrollmentCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Enrollment
-        fields = ['student', 'batch', 'payment_status', 'status']
+        fields = ['student', 'batch', 'payment_status']
         
         
     def validate(self, attrs):

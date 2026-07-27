@@ -10,7 +10,7 @@ class StudentEnrollmentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Enrollment
-        fields = ['id', 'batch', 'status', 'payment_status', 'enrolled_at']
+        fields = ['id', 'batch',  'payment_status', 'enrolled_at']
         
 
 class StudentCounselingSessionSerializer(serializers.ModelSerializer):

@@ -1,6 +1,6 @@
 # authentication/views/counselor_view.py
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny
 from rest_framework.decorators import action
 from authentication.models import User
 from authentication.serializers.counselor_register_serializer import (
@@ -10,10 +10,10 @@ from authentication.serializers.counselor_register_serializer import (
 )
 from utils.response_helpers import error_response, success_response
 from authentication.tasks import send_welcome_email
-
+from utils.permissions import IsOwner
 
 class CounselorViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwner]
 
     def get_queryset(self):
         return User.objects.filter(

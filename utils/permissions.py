@@ -1,16 +1,17 @@
 from rest_framework import permissions
-class IsMentor(permissions.BasePermission):
+class IsOwner(permissions.BasePermission):
     """
-    Object-level permission to only allow owners of an object to edit it.
-    Assumes the model instance has an `owner` attribute.
+    Allows any authenticated user through at the view level; the individual
+    dashboard views already check request.user.role themselves.
+    Object-level checks still restrict to the actual owner.
     """
 
     def has_permission(self, request, view):
-        return request.user.role == 'mentor'
+        return bool(request.user and request.user.is_authenticated)
     
         
     def has_object_permission(self, request, view, obj):
-        return obj.mentor == request.user
+        return obj == request.user or bool(request.user and request.user.is_staff)
     
 class AdminOnlyPost(permissions.BasePermission):
     def has_permission(self, request, view):

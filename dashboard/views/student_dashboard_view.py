@@ -1,11 +1,13 @@
-from rest_framework.views import APIView
+from rest_framework import generics
 from utils.response_helpers import success_response, error_response
-from counselling.models import StudentCounselor, CounselingSession
+from counselling.models import CounselingSession
 from assessment.models import StudentAssessment
 from enrollment.models import Enrollment
 from dashboard.serializers.student_dashboard_serilaizer import StudentEnrollmentSerializer, StudentAssessmentSerializer, StudentCounselingSessionSerializer
+from utils.permissions import IsOwner
 
-class StudentDashboardView(APIView):
+class StudentDashboardView(generics.GenericAPIView):
+    permission_classes = [IsOwner]
     
     def get(self, request):
         if request.user.role != 'student':

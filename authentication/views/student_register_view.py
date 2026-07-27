@@ -10,10 +10,11 @@ from authentication.serializers.student_register_serializer import (
 )
 from utils.response_helpers import error_response, success_response
 from authentication.tasks import send_welcome_email
+from utils.permissions import IsOwner
 
 
 class StudentViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwner]
 
     def get_queryset(self):
         return User.objects.filter(

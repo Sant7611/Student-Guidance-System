@@ -1,14 +1,15 @@
-from rest_framework.views import APIView
+from rest_framework import generics
 from utils.response_helpers import success_response, error_response
 from course.models import CourseBatch
 from enrollment.models import Enrollment
 from dashboard.serializers.mentor_dashboard_serilaizer import MentorBatchSerializer
 from django.db.models import Prefetch
+from utils.permissions import IsOwner
 
 
 
-class MentorDashboardView(APIView):
-    permission_classes = []
+class MentorDashboardView(generics.GenericAPIView):
+    permission_classes = [IsOwner]
 
     def get(self, request):
         if request.user.role != 'mentor':

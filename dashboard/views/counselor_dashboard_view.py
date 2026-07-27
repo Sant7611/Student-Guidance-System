@@ -1,14 +1,14 @@
-from rest_framework.views import APIView
+from rest_framework import generics
 from django.db.models import Prefetch
 from django.utils import timezone
 from counselling.models import StudentCounselor, CounselingSession
 from dashboard.serializers.counselor_dashboard_serializer import CounselorDashboardSerializer  # adjust path
 from utils.response_helpers import success_response
-from rest_framework.permissions import IsAuthenticated
+from utils.permissions import IsOwner
 
 
-class CounselorDashboardView(APIView):
-    permission_classes = [IsAuthenticated]
+class CounselorDashboardView(generics.GenericAPIView):
+    permission_classes = [IsOwner]
 
     def get(self, request):
         counselor = request.user

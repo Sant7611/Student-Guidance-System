@@ -10,7 +10,7 @@ from authentication.serializers.mentor_register_serializer import (
 )
 from utils.response_helpers import error_response, success_response
 from authentication.tasks import send_welcome_email
-
+from utils.permissions import IsOwner
 
 class MentorViewSet(viewsets.ModelViewSet):
     """
@@ -18,7 +18,7 @@ class MentorViewSet(viewsets.ModelViewSet):
     - list, retrieve, update, partial_update, destroy
     - custom register action for public mentor registration
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwner]
 
     def get_queryset(self):
         return User.objects.filter(
