@@ -25,4 +25,4 @@ class Enrollment(BaseModel):
                 condition=models.Q(is_deleted=False),
                 name="unique_active_enrollment"
             )
-        ]
+        ]   

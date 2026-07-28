@@ -3,6 +3,7 @@ from enrollment.models import Enrollment
 from course.models import CourseBatch
 from authentication.models import User
 from django.db import transaction
+from django.core.cache import cache
 
 
 class EnrollmentCreateSerializer(serializers.ModelSerializer):

@@ -31,7 +31,7 @@ class CounselorDashboardSerializer(serializers.ModelSerializer):
             'session_stats',
         ]
 
-    def get_recent_sessions(self, obj):
+    def get_recent_sessions(self, obj): 
         # View prefetches these ordered by -scheduled_at
         sessions = list(obj.counseling_sessions.all())[:5]
         return CounselingSessionReadSerializer(sessions, many=True).data
