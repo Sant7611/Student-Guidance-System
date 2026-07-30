@@ -1,0 +1,968 @@
+# 🐳 DOCKER COMPLETE GUIDE FOR DEVELOPERS
+
+## Table of Contents
+1. Basic Linux Commands
+2. What Problems Docker Solves
+3. Containerization Explained
+4. Docker Architecture
+5. Images vs Containers
+6. Dockerfile
+7. Volumes (Persistent Data)
+8. Networks (Container Communication)
+9. Docker Compose (Multi-Container Apps)
+10. Hands-On: Django + PostgreSQL + Redis with Docker
+
+---
+
+## 1. Basic Linux Commands (Quick Refresher)
+
+Since Docker runs on Linux and uses Linux kernel features, you'll often use Linux commands. Here are the essential ones:
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `pwd` | Print working directory | `pwd` → `/home/user/project` |
+| `ls` | List files | `ls -la` (all files with details) |
+| `cd` | Change directory | `cd /var/lib/docker` |
+| `mkdir` | Create directory | `mkdir myapp` |
+| `rm` | Remove files/directories | `rm -rf myapp` |
+| `cp` | Copy files | `cp file1 file2` |
+| `mv` | Move/rename | `mv old new` |
+| `cat` | View file content | `cat Dockerfile` |
+| `grep` | Search text | `grep "Error" logs.txt` |
+| `chmod` | Change permissions | `chmod +x script.sh` |
+| `ps` | List processes | `ps aux` |
+| `kill` | Kill process | `kill -9 PID` |
+| `df -h` | Disk space | `df -h` |
+| `du -sh` | Directory size | `du -sh .` |
+| `curl` | HTTP requests | `curl http://localhost:8000` |
+| `wget` | Download file | `wget https://example.com/file` |
+
+**Pro tip**: Most Docker commands use Linux file paths; knowing these basics helps a lot.
+
+---
+
+## 2. What Problems Docker Solves
+
+### 🚨 The "It Works on My Machine" Problem
+
+How many times have you heard: "It works on my machine, but not on the server!"?
+
+**Causes:**
+- Different OS versions
+- Different Python/Node/Java versions
+- Missing system libraries
+- Environment variables mismatch
+- Configuration differences
+
+### ✅ Docker's Solution: Consistency
+
+Docker **packages** your application with all its dependencies into a **container** that runs the same everywhere.
+
+```text
+Development          →    Testing         →    Production
+(Windows + Python 3.9)   (Linux + Python 3.9)   (Linux + Python 3.9)
+    ↓                       ↓                       ↓
+   Container runs the same in ALL environments!
+```
+
+### Other Problems Docker Solves:
+
+| Problem | How Docker Helps |
+|---------|------------------|
+| **Dependency conflicts** | Each app gets its own isolated environment |
+| **Slow onboarding** | New devs run `docker-compose up` and everything works |
+| **"It works on my machine"** | Same container image everywhere |
+| **Resource waste** | Containers are lightweight vs VMs |
+| **Scaling** | Easily spin up multiple containers |
+| **Microservices** | Isolate services (DB, cache, app) |
+| **CI/CD** | Build once, deploy anywhere |
+
+### Example: Before Docker
+
+```bash
+# New developer needs to set up:
+1. Install Python 3.9
+2. Install PostgreSQL 13
+3. Install Redis
+4. Install dependencies: pip install -r requirements.txt
+5. Configure database settings
+6. Run migrations
+7. Create superuser
+8. ... (takes hours, often fails)
+```
+
+### After Docker
+
+```bash
+# New developer runs one command:
+docker-compose up -d
+# All services start automatically!
+```
+
+---
+
+## 3. Containerization Explained
+
+### What is Containerization?
+
+Containerization is **OS-level virtualization** where the kernel allows multiple isolated user-space instances (containers) to run on a single host.
+
+### Containers vs Virtual Machines
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     VIRTUAL MACHINE (VM)                        │
+├─────────────────────────────────────────────────────────────────┤
+│  App1      App2      App3                                       │
+│  Guest OS  Guest OS  Guest OS                                   │
+│  Hypervisor (VirtualBox, KVM, etc.)                             │
+│  Host OS (Linux/Windows)                                        │
+│  Hardware                                                       │
+│                                                                 │
+│  ⚠️ Heavy – Each VM has its own OS, takes GBs of RAM/disk      │
+│  ⚠️ Slow – Boot time minutes                                    │
+│  ✅ Strong isolation                                             │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                      CONTAINER                                   │
+├─────────────────────────────────────────────────────────────────┤
+│  App1      App2      App3                                       │
+│  (Dependencies) (Dependencies) (Dependencies)                   │
+│  Container Engine (Docker)                                      │
+│  Host OS (Linux/Windows)                                        │
+│  Hardware                                                       │
+│                                                                 │
+│  ✅ Lightweight – Share host OS kernel, MBs of disk            │
+│  ✅ Fast – Starts in milliseconds                               │
+│  ⚠️ Less isolation than VMs (but enough for most apps)         │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Key Concepts of Containerization
+
+1. **Isolation**: Each container has its own filesystem, network, process space.
+2. **Portability**: Run the same image on any Docker-enabled host.
+3. **Efficiency**: Use host kernel, share resources.
+4. **Immutable**: Once built, the image never changes; any changes produce a new image.
+
+---
+
+## 4. Docker Architecture
+
+Docker uses a **client-server** architecture:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      DOCKER ARCHITECTURE                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   Docker Client (docker CLI)                                    │
+│         │                                                       │
+│         │ REST API over socket/HTTP                             │
+│         ▼                                                       │
+│   Docker Daemon (dockerd)                                       │
+│         │                                                       │
+│         ├─── Containers (running processes)                    │
+│         ├─── Images (stored)                                   │
+│         ├─── Volumes (data)                                    │
+│         ├─── Networks (communication)                          │
+│         │                                                       │
+│         ▼                                                       │
+│   Docker Registry (e.g., Docker Hub)                           │
+│         (pull/push images)                                     │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Components
+
+| Component | Description |
+|-----------|-------------|
+| **Docker Client** | `docker` command; you type commands like `docker run`. |
+| **Docker Daemon** | The background service that manages containers, images, etc. |
+| **Docker Registry** | Stores Docker images (public: Docker Hub, private: AWS ECR, etc.) |
+| **Containerd** | The industry-standard container runtime (used by Docker internally) |
+| **Runc** | The low-level container runtime that actually creates containers |
+
+### How It Works (Simplified)
+
+```bash
+docker run nginx
+```
+
+1. **Client** sends `run` command to Daemon.
+2. **Daemon** checks if `nginx` image exists locally.
+   - If not, pulls from Docker Hub.
+3. **Daemon** creates container from image.
+4. **Daemon** starts the container.
+
+---
+
+## 5. Images vs Containers
+
+### The Analogy
+
+- **Image** = Class (blueprint)
+- **Container** = Object (instance)
+
+### Image
+
+- Immutable snapshot of your application and its environment.
+- Contains the filesystem, libraries, dependencies, and startup commands.
+- Read-only; you cannot modify an image.
+- Stored in a registry.
+- Example: `python:3.9-slim` (official Python image)
+
+### Container
+
+- A running instance of an image.
+- Writable layer on top of the image (copy-on-write).
+- Has its own process space, network interface, and mount points.
+- Can be stopped, started, deleted.
+- Example: `docker run -d --name my-app nginx` creates a container from the `nginx` image.
+
+### Commands to Work with Images and Containers
+
+```bash
+# IMAGES
+docker images                     # List images
+docker pull nginx:alpine          # Download image
+docker build -t myapp .           # Build image from Dockerfile
+docker rmi myapp                  # Remove image
+docker tag myapp myrepo/myapp:v1  # Tag image for registry
+docker push myrepo/myapp:v1       # Push to registry
+
+# CONTAINERS
+docker ps                         # List running containers
+docker ps -a                      # List all containers
+docker run -d --name web nginx    # Run container in background
+docker stop web                   # Stop container
+docker start web                  # Start container
+docker restart web                # Restart
+docker rm web                     # Remove container (must be stopped)
+docker logs web                   # View logs
+docker exec -it web bash          # Get interactive shell inside container
+docker inspect web                # Detailed info about container
+```
+
+### Image Layers
+
+Docker images are built in layers. Each instruction in a Dockerfile creates a new layer.
+
+```
+Layer 3: Copy application code (your changes)
+Layer 2: Install dependencies
+Layer 1: Base image (e.g., python:3.9)
+```
+
+**Benefits:**
+- Caching: If you change code, only the last layer is rebuilt.
+- Sharing: Base layers are shared between images.
+
+---
+
+## 6. Dockerfile
+
+A `Dockerfile` is a text file with instructions to build an image.
+
+### Basic Structure
+
+```dockerfile
+# 1. Base image
+FROM python:3.9-slim
+
+# 2. Set working directory
+WORKDIR /app
+
+# 3. Copy dependencies file
+COPY requirements.txt .
+
+# 4. Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 5. Copy application code
+COPY . .
+
+# 6. Expose port
+EXPOSE 8000
+
+# 7. Command to run
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+```
+
+### Common Dockerfile Instructions
+
+| Instruction | Purpose |
+|-------------|---------|
+| `FROM` | Base image (e.g., `python:3.9-slim`) |
+| `WORKDIR` | Set working directory inside container |
+| `COPY` / `ADD` | Copy files from host to container |
+| `RUN` | Execute command during build (e.g., install packages) |
+| `ENV` | Set environment variable |
+| `ARG` | Build-time variable |
+| `EXPOSE` | Document port (does NOT publish) |
+| `CMD` | Default command when container starts |
+| `ENTRYPOINT` | Command that cannot be overridden |
+| `VOLUME` | Create mount point for persistent data |
+| `USER` | Switch user inside container |
+| `HEALTHCHECK` | Check container health |
+
+### Best Practices
+
+1. **Use a `.dockerignore`** file to exclude unnecessary files (like `__pycache__`, `.git`, etc.)
+
+```
+# .dockerignore
+__pycache__
+*.pyc
+.env
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+README.md
+```
+
+2. **Combine RUN commands** to reduce layers:
+
+```dockerfile
+RUN apt-get update && apt-get install -y \
+    curl \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+```
+
+3. **Use specific versions** (not `latest`) for reproducibility.
+
+4. **Order layers smartly**: Copy requirements first, then install; copy code last (to leverage cache).
+
+5. **Run as non-root** for security:
+
+```dockerfile
+RUN adduser --disabled-password appuser
+USER appuser
+```
+
+### Full Example for Django
+
+```dockerfile
+# Use official Python image
+FROM python:3.9-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Create app user
+RUN adduser --disabled-password appuser
+
+# Set work directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy project
+COPY . .
+
+# Change ownership to appuser
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE 8000
+
+# Run Gunicorn (production) or development server
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "myproject.wsgi:application"]
+# For development: CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+```
+
+---
+
+## 7. Volumes (Persistent Data)
+
+### The Problem
+
+Containers are ephemeral: when you delete a container, all data inside it is lost. This is a problem for databases, uploaded files, logs, etc.
+
+### The Solution: Volumes
+
+**Volumes** are directories on the host that are mounted into containers, allowing data to persist.
+
+### Types of Mounts
+
+| Type | Description |
+|------|-------------|
+| **Volume** | Managed by Docker (`/var/lib/docker/volumes`) – best for production |
+| **Bind Mount** | Mount a host directory directly – best for development (live code reload) |
+| **tmpfs** | Mount in memory – temporary data |
+
+### Volume Commands
+
+```bash
+# Create a named volume
+docker volume create mydata
+
+# List volumes
+docker volume ls
+
+# Inspect volume
+docker volume inspect mydata
+
+# Remove volume
+docker volume rm mydata
+
+# Run container with volume
+docker run -v mydata:/app/data myapp
+
+# Using --mount (preferred syntax)
+docker run --mount type=volume,source=mydata,target=/app/data myapp
+```
+
+### Example: Django with PostgreSQL using a volume
+
+```bash
+# Create a volume for PostgreSQL data
+docker volume create pgdata
+
+# Run PostgreSQL container with volume
+docker run -d \
+  --name postgres \
+  -e POSTGRES_PASSWORD=secret \
+  -v pgdata:/var/lib/postgresql/data \
+  postgres:13
+```
+
+### Bind Mounts for Development (Live Code Reload)
+
+```bash
+docker run -d \
+  --name myapp \
+  -v $(pwd):/app \   # mount current directory to /app
+  -p 8000:8000 \
+  myapp:latest
+```
+
+Any changes you make in the current directory are reflected inside the container.
+
+### Use with Docker Compose (later)
+
+```yaml
+services:
+  web:
+    build: .
+    volumes:
+      - .:/app
+      - /app/__pycache__  # ignore cache
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+```
+
+---
+
+## 8. Networks (Container Communication)
+
+### The Need
+
+By default, containers can communicate with each other if they're on the same network. Docker creates a bridge network by default.
+
+### Network Drivers
+
+| Driver | Description |
+|--------|-------------|
+| **bridge** | Default; containers on same bridge can talk; ports need to be exposed to host. |
+| **host** | Use host's network directly (performance, but less isolation). |
+| **overlay** | Swarm mode; multi-host networking. |
+| **macvlan** | Assign MAC addresses to containers (like physical NIC). |
+| **none** | No networking. |
+
+### Basic Network Commands
+
+```bash
+# List networks
+docker network ls
+
+# Create a network
+docker network create mynet
+
+# Run container with network
+docker run --network mynet --name web nginx
+
+# Connect existing container
+docker network connect mynet web2
+
+# Disconnect
+docker network disconnect mynet web2
+
+# Inspect network
+docker network inspect mynet
+
+# Remove network (must be unused)
+docker network rm mynet
+```
+
+### DNS Resolution in Docker
+
+Containers on the same user-defined network can reach each other by **container name**.
+
+```bash
+# Create network
+docker network create app-net
+
+# Run PostgreSQL
+docker run -d --network app-net --name db postgres:13
+
+# Run Django app
+docker run -d --network app-net --name web -p 8000:8000 myapp
+
+# In Django, you can connect to db using hostname 'db'
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'secret',
+        'HOST': 'db',   # ← container name
+        'PORT': 5432,
+    }
+}
+```
+
+### Exposing Ports
+
+```bash
+# -p host_port:container_port
+docker run -d -p 8080:80 nginx   # Host's 8080 maps to container's 80
+
+# For multiple ports
+docker run -d -p 8000:8000 -p 5000:5000 myapp
+```
+
+### Network Aliases
+
+```yaml
+# In compose
+services:
+  web:
+    networks:
+      app-net:
+        aliases:
+          - api
+```
+
+---
+
+## 9. Docker Compose
+
+### What is Docker Compose?
+
+A tool to define and run multi-container Docker applications using a single YAML file (`docker-compose.yml`).
+
+### Why Use Compose?
+
+- Manage multiple containers (app, DB, cache, queue) as one application.
+- One command to start all: `docker-compose up`.
+- Define dependencies, networks, volumes, environment variables.
+
+### Installation
+
+Docker Compose is included with Docker Desktop. For Linux, install separately:
+```bash
+sudo apt install docker-compose   # or
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
+### Basic `docker-compose.yml` Structure
+
+```yaml
+version: '3.8'
+
+services:
+  web:                     # service name
+    build: .               # build from Dockerfile in current dir
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+
+volumes:
+  postgres_data:
+```
+
+### Common Commands
+
+```bash
+# Start all services (detached)
+docker-compose up -d
+
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes (⚠️ deletes data)
+docker-compose down -v
+
+# View logs
+docker-compose logs -f web
+
+# Run a one-off command
+docker-compose run web python manage.py migrate
+
+# Execute command in running container
+docker-compose exec web bash
+
+# Rebuild and start
+docker-compose up -d --build
+
+# Scale a service
+docker-compose up -d --scale web=3
+```
+
+### Example: Django + PostgreSQL + Redis with Compose
+
+```yaml
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: mydb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  # optional, for external access
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - DB_NAME=mydb
+      - DB_USER=postgres
+      - DB_PASSWORD=secret
+      - DB_HOST=db
+      - REDIS_HOST=redis
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  postgres_data:
+```
+
+### Advanced: Using `.env` file
+
+Create `.env` file:
+
+```env
+DEBUG=1
+DB_PASSWORD=secret
+SECRET_KEY=my-secret-key
+```
+
+Then reference in `docker-compose.yml`:
+
+```yaml
+web:
+  env_file:
+    - .env
+  # or
+  environment:
+    - DEBUG=${DEBUG}
+    - DB_PASSWORD=${DB_PASSWORD}
+```
+
+---
+
+## 10. Hands-On: Django + PostgreSQL + Redis with Docker
+
+Let's put everything together.
+
+### Step 1: Project Setup
+
+Create a new Django project (or use existing).
+
+```bash
+mkdir myproject && cd myproject
+python -m venv venv
+source venv/bin/activate  # or .\venv\Scripts\activate on Windows
+pip install django psycopg2-binary redis
+django-admin startproject core .
+```
+
+### Step 2: Create `requirements.txt`
+
+```text
+Django==4.2
+psycopg2-binary==2.9.9
+redis==5.0.0
+gunicorn==21.2.0
+```
+
+### Step 3: Write `Dockerfile`
+
+```dockerfile
+FROM python:3.10-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+COPY . .
+
+RUN adduser --disabled-password appuser
+USER appuser
+
+EXPOSE 8000
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+```
+
+### Step 4: Create `docker-compose.yml`
+
+```yaml
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    command: redis-server --appendonly yes
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/mydb
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  postgres_data:
+```
+
+### Step 5: Configure Django Settings
+
+In `core/settings.py`, use environment variables:
+
+```python
+import os
+
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-...')
+DEBUG = bool(int(os.environ.get('DEBUG', 0)))
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME', 'mydb'),
+        'USER': os.environ.get('DB_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
+        'HOST': os.environ.get('DB_HOST', 'db'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
+    }
+}
+
+# Redis cache (optional)
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://redis:6379/0'),
+        'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient'},
+    }
+}
+```
+
+### Step 6: Run with Docker Compose
+
+```bash
+docker-compose up -d --build
+```
+
+Check logs:
+```bash
+docker-compose logs -f web
+```
+
+Run migrations:
+```bash
+docker-compose exec web python manage.py migrate
+```
+
+Create superuser:
+```bash
+docker-compose exec web python manage.py createsuperuser
+```
+
+Access app at http://localhost:8000
+
+### Step 7: Stop everything
+
+```bash
+docker-compose down -v  # -v removes volumes (⚠️ deletes data)
+```
+
+### Step 8: Production-Ready Changes
+
+For production, you'd use:
+
+- **Gunicorn** instead of runserver.
+- **Nginx** as reverse proxy.
+- **Environment-specific settings**.
+- **Separate Dockerfile** for production.
+
+Example production `docker-compose.prod.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
+    environment:
+      - DEBUG=0
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  # ... db and redis same as before, but maybe with more resources
+```
+
+### Step 9: Dockerfile.prod
+
+```dockerfile
+FROM python:3.10-slim
+
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+COPY . .
+
+RUN adduser --disabled-password appuser
+USER appuser
+
+EXPOSE 8000
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "core.wsgi:application"]
+```
+
+---
+
+## Summary Checklist
+
+| Topic | Status |
+|-------|--------|
+| ✅ Basic Linux commands | Learned |
+| ✅ Problems Docker solves | Understood |
+| ✅ Containerization | Grasped |
+| ✅ Docker Architecture | Understood |
+| ✅ Images vs Containers | Clear |
+| ✅ Dockerfile | Can write |
+| ✅ Volumes | Used |
+| ✅ Networks | Configured |
+| ✅ Docker Compose | Mastered |
+
+---
+
+## Additional Resources
+
+- [Official Docker Documentation](https://docs.docker.com/)
+- [Docker Cheat Sheet](https://dockerlabs.collabnix.com/docker/cheatsheet/)
+- [Awesome Docker](https://github.com/veggiemonk/awesome-docker)
+- [Play with Docker Classroom](https://training.play-with-docker.com/)
+
+---
+
+**Happy Containerizing! 🐳**
+
+If you have any questions, feel free to ask!

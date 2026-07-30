@@ -12,6 +12,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from utils.response_helpers import error_response, success_response
 from rest_framework.permissions import AllowAny
 from rest_framework import generics
+from django.contrib.auth import login
 
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
@@ -23,10 +24,8 @@ class LoginView(generics.GenericAPIView):
         if not serializer.is_valid():
             return error_response(errors=serializer.errors,status_code=400 )
         user = serializer.validated_data['user']
+        login(request, user)
         refresh = RefreshToken.for_user(user)
-        print(user.role)
-        print(user.id)
-        print(user.username)
         data={
             'user':{
                 'user_id':user.id,
