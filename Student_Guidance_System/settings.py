@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'django_filters',
+    'channels',
     'authentication',
     'base',
     'rest_framework.authtoken',
@@ -59,8 +60,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_celery_results',
     'dashboard',
-    'channels'
-    
+    'notifications',
 ]
 
 ASGI_APPLICATION = 'student_guidance_system.asgi.application'
@@ -69,7 +69,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [('127.0.0.1', 6379)],
+            'hosts': [('host.docker.internal', 6379)],
         },
     },
 }
@@ -103,6 +103,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'student_guidance_system.wsgi.application'
+ASGI_APPLICATION = 'student_guidance_system.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [config('CELERY_BROKER_URL', default='redis://host.docker.internal:6379/0')],
+        },
+    },
+}
 
 
 # Database
@@ -183,7 +193,7 @@ CORS_ALLOW_CREDENTIALS = True   # Allow cookies in cross-origin requests
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'LOCATION': 'redis://host.docker.internal:6379/1',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },

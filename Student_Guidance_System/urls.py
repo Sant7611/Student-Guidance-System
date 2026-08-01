@@ -52,6 +52,7 @@ urlpatterns = [
     path('api/', include('career.urls')),
     path('api/', include('assessment.urls')),
     path('api/', include('dashboard.urls')),
+    path('api/notifications/', include('notifications.urls')),
 ]
 
 
