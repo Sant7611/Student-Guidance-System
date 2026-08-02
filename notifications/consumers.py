@@ -40,3 +40,19 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             'body': event['body'],
             'timestamp': event['timestamp'],
         }))
+        
+# from channels.generic.websocket import AsyncWebsocketConsumer
+
+
+# class NotificationConsumer(AsyncWebsocketConsumer):
+
+#     async def connect(self):
+#         print("WebSocket connection received")
+
+#         await self.accept()
+
+#         print("WebSocket connection accepted")
+
+
+#     async def disconnect(self, close_code):
+#         print("WebSocket disconnected")

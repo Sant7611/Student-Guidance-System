@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 9009
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:9009"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "9009", "student_guidance_system.asgi:application"]

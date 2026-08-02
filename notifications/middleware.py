@@ -1,16 +1,18 @@
+# notifications/middleware.py
 from urllib.parse import parse_qs
 
 from channels.db import database_sync_to_async
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import AccessToken
 
-User = get_user_model()
-
 
 @database_sync_to_async
 def get_user_from_token(token):
+    # Lazy import — only runs when function is called, after Django is ready
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    
     try:
         access_token = AccessToken(token)
         user_id = access_token['user_id']

@@ -63,16 +63,7 @@ INSTALLED_APPS = [
     'notifications',
 ]
 
-ASGI_APPLICATION = 'student_guidance_system.asgi.application'
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [('host.docker.internal', 6379)],
-        },
-    },
-}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -105,15 +96,26 @@ TEMPLATES = [
 WSGI_APPLICATION = 'student_guidance_system.wsgi.application'
 ASGI_APPLICATION = 'student_guidance_system.asgi.application'
 
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             'hosts': [config('CELERY_BROKER_URL', default='redis://192.168.251.9:6379/0')],
+#         },
+#     },
+# }
+
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [config('CELERY_BROKER_URL', default='redis://host.docker.internal:6379/0')],
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                "redis://redis:6379/2"
+                ],
+            
         },
     },
 }
-
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
@@ -193,7 +195,7 @@ CORS_ALLOW_CREDENTIALS = True   # Allow cookies in cross-origin requests
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://host.docker.internal:6379/1',
+        'LOCATION': 'redis://redis:6379/1',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
@@ -261,9 +263,9 @@ EMAIL_HOST_PASSWORD = 'iqli ybog tbbx mmez' #use app password here.
 
 # DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-REDIS_HOST = config('REDIS_HOST', default='localhost')
+REDIS_HOST = config('REDIS_HOST', default='redis')
 REDIS_PORT = config('REDIS_PORT', default='6379')
-REDIS_DB = config('REDIS_DB', default='1')
+REDIS_DB = config('REDIS_DB', default='0')
 REDIS_PASSWORD = config('REDIS_PASSWORD', default='')  # Empty string if not set
 
 redis_url = f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}'
