@@ -46,6 +46,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                 "id": event["id"],
                 "title": event["title"],
                 "body": event["body"],
+                "notification_type": event.get("notification_type", "system"),
                 "created_at": event["created_at"],
                 "is_read": event.get("is_read", False),
             }
