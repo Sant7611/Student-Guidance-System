@@ -24,3 +24,14 @@ class NotificationMarkReadView(APIView):
         notification.is_read = True
         notification.save(update_fields=['is_read'])
         return Response(NotificationSerializer(notification).data)
+
+
+class NotificationDeleteView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, pk):
+        notification = Notification.objects.filter(pk=pk, recipient=request.user).first()
+        if not notification:
+            return Response({'detail': 'Not found.'}, status=404)
+        notification.delete()
+        return Response(status=204)

@@ -18,7 +18,8 @@ class StudentCounselingSessionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CounselingSession
-        fields = ['id', 'counselor', 'scheduled_at', 'status', 'notes']
+        # 'notes' intentionally excluded here — counselor-private, students should not see them
+        fields = ['id', 'counselor', 'scheduled_at', 'status']
 
 class StudentAssessmentSerializer(serializers.ModelSerializer):
     """
