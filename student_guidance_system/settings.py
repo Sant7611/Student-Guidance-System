@@ -105,44 +105,92 @@ ASGI_APPLICATION = 'student_guidance_system.asgi.application'
 #     },
 # }
 
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels_redis.core.RedisChannelLayer",
+#         "CONFIG": {
+#             "hosts": [
+#                 "redis://redis:6379/2"
+#                 ],
+            
+#         },
+#     },
+# }
+
+# Database
+# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+
+# DB_ENGINE = config('DB_ENGINE', default='django.db.backends.sqlite3')
+# DB_NAME = config('DB_NAME', default='db.sqlite3')
+
+# if DB_ENGINE == 'django.db.backends.sqlite3':
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': DB_ENGINE,
+#             'NAME': BASE_DIR / DB_NAME,
+#         }
+#     }
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': DB_ENGINE,
+#             'NAME': DB_NAME,
+#             'USER': config('DB_USER', default=''),
+#             'PASSWORD': config('DB_PASSWORD', default=''),
+#             'HOST': config('DB_HOST', default=''),
+#             'PORT': config('DB_PORT', default=''),
+#         }
+#     }
+
+#for render db conn
+import dj_database_url
+
+DATABASES = {
+    "default": dj_database_url.config(
+        default=config("DATABASE_URL")
+    )
+}
+
+REDIS_URL = config("REDIS_URL")
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [
-                "redis://redis:6379/2"
-                ],
-            
+                f"{REDIS_URL}/0"
+            ],
+            "capacity": 1500,
+            "expiry": 10,
         },
     },
 }
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DB_ENGINE = config('DB_ENGINE', default='django.db.backends.sqlite3')
-DB_NAME = config('DB_NAME', default='db.sqlite3')
-
-if DB_ENGINE == 'django.db.backends.sqlite3':
-    DATABASES = {
-        'default': {
-            'ENGINE': DB_ENGINE,
-            'NAME': BASE_DIR / DB_NAME,
-        }
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"{REDIS_URL}/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+        },
+        "KEY_PREFIX": "sgs",
+        "TIMEOUT": 300,
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': DB_ENGINE,
-            'NAME': DB_NAME,
-            'USER': config('DB_USER', default=''),
-            'PASSWORD': config('DB_PASSWORD', default=''),
-            'HOST': config('DB_HOST', default=''),
-            'PORT': config('DB_PORT', default=''),
-        }
-    }
+}
 
 
+CELERY_BROKER_URL = f"{REDIS_URL}/2"
+CELERY_RESULT_BACKEND = "django-db"
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 AUTH_USER_MODEL = 'authentication.User'
 
@@ -157,7 +205,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 5,
 }
-21
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
@@ -169,7 +217,8 @@ SIMPLE_JWT = {
 
 SESSION_COOKIE_NAME = "sessionid"
 SESSION_COOKIE_HTTPONLY = True          # JavaScript cannot read
-SESSION_COOKIE_SECURE = False            # HTTPS only in production
+# SESSION_COOKIE_SECURE = False            # HTTPS only in production
+CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SAMESITE = "Strict"          # "None" requires Secure=True (HTTPS), else browsers reject the cookie
 SESSION_COOKIE_AGE = 1209600             # 2 weeks in seconds
 SESSION_SAVE_EVERY_REQUEST = True      # Refresh expiry on activity
@@ -178,31 +227,31 @@ SESSION_SAVE_EVERY_REQUEST = True      # Refresh expiry on activity
 # 3. CSRF Protection (for browsable API / admin)
 # ===================================================================
 CSRF_COOKIE_HTTPONLY = False   # frontend JS must read this cookie to send X-CSRFToken
-CSRF_COOKIE_SECURE = False
+# CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SAMESITE = "Lax"
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-]
+
+
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', cast=Csv())
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', cast=Csv())
 
 # ===================================================================
 # 4. CORS (required for cross-origin frontend)
 # ===================================================================
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
+
 CORS_ALLOW_CREDENTIALS = True   # Allow cookies in cross-origin requests
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://redis:6379/1',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        },
-        'KEY_PREFIX': 'skillshikshya',
-        'TIMEOUT': 300,
-    }
-}
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://redis:6379/1',
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         },
+#         'KEY_PREFIX': 'skillshikshya',
+#         'TIMEOUT': 300,
+#     }
+# }
 
 
 # Password validation
@@ -241,37 +290,19 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 MEDIA_ROOT = BASE_DIR / 'media'
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
-# #email setting(gmail)
-# EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-# EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-# EMAIL_PORT = config('EMAIL_PORT', default=587)
-# EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True)
-# EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='sbohara579@gmail.com')  # your-email@gmail.com
-# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')  # Gmail app password
-# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# REDIS_HOST = config('REDIS_HOST', default='redis')
+# REDIS_PORT = config('REDIS_PORT', default='6379')
+# REDIS_DB = config('REDIS_DB', default='0')
+# REDIS_PASSWORD = config('REDIS_PASSWORD', default='')  # Empty string if not set
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER='sbohara579@gmail.com' #gmail should be 2 step verification
-EMAIL_HOST_PASSWORD = 'iqli ybog tbbx mmez' #use app password here.
+# redis_url = f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}'
 
-
-# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-REDIS_HOST = config('REDIS_HOST', default='redis')
-REDIS_PORT = config('REDIS_PORT', default='6379')
-REDIS_DB = config('REDIS_DB', default='0')
-REDIS_PASSWORD = config('REDIS_PASSWORD', default='')  # Empty string if not set
-
-redis_url = f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}'
-
-CELERY_BROKER_URL = redis_url
-CELERY_RESULT_BACKEND = redis_url
+# CELERY_BROKER_URL = redis_url
+# CELERY_RESULT_BACKEND = redis_url
 
 # Other Celery settings (hardcoded in settings.py, not .env)
 CELERY_REDIS_MAX_CONNECTIONS = 20
@@ -283,7 +314,6 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
 
-CELERY_RESULT_BACKEND = 'django-db'
 
 # Optional: Enable extended task information (like task arguments)
 CELERY_RESULT_EXTENDED = True
