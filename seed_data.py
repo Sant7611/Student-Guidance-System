@@ -765,6 +765,7 @@ def seed_data():
     print(f"Assessments:     {Assessment.objects.count()}")
     print(f"Assessment Skills: {AssessmentSkill.objects.count()}")
     print(f"Test Student:    student1 / Student@123")
+    print(f"Superuser:       admin / admin@admin.com / Password: admin")
     print("=" * 60)
     print("\nNext steps:")
     print("  1. Login as student1")
@@ -781,3 +782,25 @@ if __name__ == "__main__":
         print(f"\nError: {e}")
         import traceback
         traceback.print_exc()
+    # =============================================================================
+    # 10. SUPERUSER
+    # =============================================================================
+    print("\n[10/8] Creating Superuser...")
+
+    superuser, created = User.objects.get_or_create(
+        username="admin",
+        defaults={
+            "email": "admin@admin.com",
+            "first_name": "Admin",
+            "last_name": "User",
+            "role": "admin",
+            "is_active": True,
+            "is_staff": True,
+            "is_superuser": True,
+        }
+    )
+    # Always set/reset password
+    superuser.set_password("admin")
+    superuser.save()
+    status = "Created" if created else "Updated password"
+    print(f"  [{status}] Superuser: {superuser.username} / Email: {superuser.email} / Password: admin")
