@@ -757,8 +757,9 @@ class Command(BaseCommand):
             }
         )
         # Always set/reset password
-        student.set_password("Student@123")
-        student.save()
+        if created:
+            student.set_password("Student@123")
+            student.save()
         status = "Created" if created else "Updated password"
         print(f"  [{status}] Student: {student.username} / Password: Student@123")
         
@@ -778,8 +779,9 @@ class Command(BaseCommand):
                 }
             )
             # Always set/reset password
-        superuser.set_password("admin")
-        superuser.save()
+        if created:
+            superuser.set_password("admin")
+            superuser.save()
         status = "Created" if created else "Updated password"
         print(f"  [{status}] Superuser: {superuser.username} / Email: {superuser.email} / Password: admin")
 
