@@ -24,7 +24,9 @@ class MentorViewSet(viewsets.ModelViewSet):
         return User.objects.filter(
             role='mentor',
             is_deleted=False
-        ).select_related('mentor_profile').prefetch_related('mentor_profile__skills')
+        ).select_related('mentor_profile').prefetch_related(
+            'mentor_profile__skills', 'mentored_batches__course'
+        )
 
     def get_serializer_class(self):
         if self.action == 'register':

@@ -65,4 +65,14 @@ class EnrollmentDetailSerializer(serializers.ModelSerializer):
         return { "id": obj.student.id, "username": obj.student.username, "email": obj.student.email }
     
     def get_batch_detail(self, obj):
-        return { "id": obj.batch.id, "batch_code": obj.batch.batch_code, "course": obj.batch.course.title, "mentor":obj.batch.mentor.username }
+        return {
+            "id": obj.batch.id,
+            "batch_code": obj.batch.batch_code,
+            "course": obj.batch.course.title,
+            "course_id": obj.batch.course_id,
+            "mentor": obj.batch.mentor.username if obj.batch.mentor else None,
+            "status": obj.batch.status,
+            "start_date": obj.batch.start_date,
+            "end_date": obj.batch.end_date,
+            "schedule": obj.batch.schedule,
+        }

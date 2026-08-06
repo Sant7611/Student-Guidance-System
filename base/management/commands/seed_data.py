@@ -8,9 +8,10 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from skill.models import Skill
 from career.models import Career, CareerSkill, CareerPath
-from course.models import Course, CourseCategory
+from course.models import Course, CourseBatch, CourseCategory
 from assessment.models import Assessment, AssessmentSkill
-from authentication.models import User
+from authentication.models import CounselorProfile, MentorProfile, User
+from datetime import date, timedelta
 
 
 class Command(BaseCommand):
@@ -108,7 +109,7 @@ class Command(BaseCommand):
                 "level": "beginner",
                 "price": 99.99,
                 "is_active": True,
-                "duration": "4 weeks",
+                "duration": timedelta(weeks=4),
             },
             {
                 "title": "Advanced Python",
@@ -118,7 +119,7 @@ class Command(BaseCommand):
                 "level": "intermediate",
                 "price": 149.99,
                 "is_active": True,
-                "duration": "6 weeks",
+                "duration": timedelta(weeks=6),
             },
             {
                 "title": "JavaScript Essentials",
@@ -128,7 +129,7 @@ class Command(BaseCommand):
                 "level": "beginner",
                 "price": 99.99,
                 "is_active": True,
-                "duration": "3 weeks",
+                "duration": timedelta(weeks=3),
             },
             {
                 "title": "React.js Mastery",
@@ -138,7 +139,7 @@ class Command(BaseCommand):
                 "level": "intermediate",
                 "price": 199.99,
                 "is_active": True,
-                "duration": "5 weeks",
+                "duration": timedelta(weeks=5),
             },
             {
                 "title": "SQL for Data",
@@ -148,7 +149,7 @@ class Command(BaseCommand):
                 "level": "beginner",
                 "price": 79.99,
                 "is_active": True,
-                "duration": "4 weeks",
+                "duration": timedelta(weeks=4),
             },
             {
                 "title": "Advanced SQL",
@@ -158,7 +159,7 @@ class Command(BaseCommand):
                 "level": "advanced",
                 "price": 129.99,
                 "is_active": True,
-                "duration": "4 weeks",
+                "duration": timedelta(weeks=4),
             },
             {
                 "title": "Django Full Stack",
@@ -168,7 +169,7 @@ class Command(BaseCommand):
                 "level": "intermediate",
                 "price": 249.99,
                 "is_active": True,
-                "duration": "8 weeks",
+                "duration": timedelta(weeks=8),
             },
             {
                 "title": "Java Programming",
@@ -178,7 +179,7 @@ class Command(BaseCommand):
                 "level": "beginner",
                 "price": 129.99,
                 "is_active": True,
-                "duration": "6 weeks",
+                "duration": timedelta(weeks=6),
             },
             {
                 "title": "Data Analysis with Python",
@@ -188,7 +189,7 @@ class Command(BaseCommand):
                 "level": "intermediate",
                 "price": 179.99,
                 "is_active": True,
-                "duration": "5 weeks",
+                "duration": timedelta(weeks=5),
             },
             {
                 "title": "Machine Learning Basics",
@@ -198,7 +199,7 @@ class Command(BaseCommand):
                 "level": "intermediate",
                 "price": 199.99,
                 "is_active": True,
-                "duration": "7 weeks",
+                "duration": timedelta(weeks=7),
             },
             {
                 "title": "Effective Communication",
@@ -208,7 +209,7 @@ class Command(BaseCommand):
                 "level": "beginner",
                 "price": 69.99,
                 "is_active": True,
-                "duration": "2 weeks",
+                "duration": timedelta(weeks=2),
             },
             {
                 "title": "Leadership Development",
@@ -218,7 +219,7 @@ class Command(BaseCommand):
                 "level": "intermediate",
                 "price": 149.99,
                 "is_active": True,
-                "duration": "4 weeks",
+                "duration": timedelta(weeks=4),
             },
             {
                 "title": "Project Management Pro",
@@ -228,7 +229,7 @@ class Command(BaseCommand):
                 "level": "intermediate",
                 "price": 229.99,
                 "is_active": True,
-                "duration": "5 weeks",
+                "duration": timedelta(weeks=5),
             },
             {
                 "title": "Team Collaboration",
@@ -238,7 +239,7 @@ class Command(BaseCommand):
                 "level": "beginner",
                 "price": 79.99,
                 "is_active": True,
-                "duration": "2 weeks",
+                "duration": timedelta(weeks=2),
             },
             {
                 "title": "Critical Thinking Mastery",
@@ -248,7 +249,67 @@ class Command(BaseCommand):
                 "level": "beginner",
                 "price": 89.99,
                 "is_active": True,
-                "duration": "3 weeks",
+                "duration": timedelta(weeks=3),
+            },
+            {
+                "title": "Cloud Computing Foundations", "prefix": "CLD",
+                "description": "Cloud concepts, virtual networks, storage, security, and scalable services.",
+                "categories": ["Programming"], "level": "beginner", "price": 159.99,
+                "is_active": True, "duration": timedelta(weeks=5),
+            },
+            {
+                "title": "DevOps and CI CD", "prefix": "DEV",
+                "description": "Automate builds, tests, deployments, containers, and delivery pipelines.",
+                "categories": ["Programming", "Project Management"], "level": "intermediate", "price": 219.99,
+                "is_active": True, "duration": timedelta(weeks=6),
+            },
+            {
+                "title": "Cybersecurity Essentials", "prefix": "SEC",
+                "description": "Security principles, risk analysis, access control, and incident response.",
+                "categories": ["Programming"], "level": "beginner", "price": 169.99,
+                "is_active": True, "duration": timedelta(weeks=5),
+            },
+            {
+                "title": "UI UX Design Fundamentals", "prefix": "UX",
+                "description": "Research users, build wireframes, prototype interfaces, and test usability.",
+                "categories": ["Web Development"], "level": "beginner", "price": 139.99,
+                "is_active": True, "duration": timedelta(weeks=4),
+            },
+            {
+                "title": "REST API Engineering", "prefix": "API",
+                "description": "Design, secure, document, test, and maintain production REST APIs.",
+                "categories": ["Programming", "Web Development"], "level": "intermediate", "price": 189.99,
+                "is_active": True, "duration": timedelta(weeks=5),
+            },
+            {
+                "title": "Mobile Apps with React Native", "prefix": "RN",
+                "description": "Build cross-platform mobile applications with React Native and APIs.",
+                "categories": ["Programming"], "level": "intermediate", "price": 229.99,
+                "is_active": True, "duration": timedelta(weeks=7),
+            },
+            {
+                "title": "Data Engineering Foundations", "prefix": "DE",
+                "description": "Create reliable data pipelines, warehouses, transformations, and quality checks.",
+                "categories": ["Database", "Data Science"], "level": "intermediate", "price": 239.99,
+                "is_active": True, "duration": timedelta(weeks=7),
+            },
+            {
+                "title": "AI Product Development", "prefix": "AIP",
+                "description": "Plan, prototype, evaluate, and deliver responsible AI-enabled products.",
+                "categories": ["Data Science", "Project Management"], "level": "advanced", "price": 279.99,
+                "is_active": True, "duration": timedelta(weeks=8),
+            },
+            {
+                "title": "Software Testing Automation", "prefix": "QA",
+                "description": "Develop unit, integration, browser, and API automation test suites.",
+                "categories": ["Programming"], "level": "intermediate", "price": 179.99,
+                "is_active": True, "duration": timedelta(weeks=5),
+            },
+            {
+                "title": "Technical Interview Preparation", "prefix": "TIP",
+                "description": "Practice algorithms, system design, communication, and interview strategy.",
+                "categories": ["Programming", "Soft Skills"], "level": "intermediate", "price": 119.99,
+                "is_active": True, "duration": timedelta(weeks=4),
             },
         ]
 
@@ -314,6 +375,16 @@ class Command(BaseCommand):
                 "average_salary": 78000.00,
                 "industry": "Business",
             },
+            {"title": "Cloud Engineer", "description": "Design and operate secure, scalable cloud infrastructure and services.", "average_salary": 105000.00, "industry": "Cloud Computing"},
+            {"title": "Cybersecurity Analyst", "description": "Monitor systems, investigate threats, manage risk, and improve security controls.", "average_salary": 98000.00, "industry": "Cybersecurity"},
+            {"title": "UI UX Designer", "description": "Research user needs and design accessible, effective digital experiences.", "average_salary": 82000.00, "industry": "Design"},
+            {"title": "Mobile App Developer", "description": "Build and maintain performant mobile applications for multiple platforms.", "average_salary": 92000.00, "industry": "Technology"},
+            {"title": "Data Engineer", "description": "Build dependable data platforms, pipelines, warehouses, and governance processes.", "average_salary": 108000.00, "industry": "Data Science"},
+            {"title": "Machine Learning Engineer", "description": "Productionize machine-learning models and build reliable ML platforms.", "average_salary": 125000.00, "industry": "Artificial Intelligence"},
+            {"title": "Quality Assurance Engineer", "description": "Plan quality strategy and automate software testing across the delivery lifecycle.", "average_salary": 85000.00, "industry": "Technology"},
+            {"title": "API Engineer", "description": "Design secure, observable, and developer-friendly application interfaces.", "average_salary": 102000.00, "industry": "Technology"},
+            {"title": "Technical Product Manager", "description": "Guide technical products from discovery through delivery and measurement.", "average_salary": 118000.00, "industry": "Product Management"},
+            {"title": "Solutions Architect", "description": "Translate business goals into resilient end-to-end technical architectures.", "average_salary": 132000.00, "industry": "Technology"},
         ]
 
         created_careers = {}
@@ -388,6 +459,37 @@ class Command(BaseCommand):
             {"career": "Business Analyst", "skill": "Data Analysis", "minimum_score": 60, "weightage": 15},
             {"career": "Business Analyst", "skill": "Project Management", "minimum_score": 65, "weightage": 20},
             {"career": "Business Analyst", "skill": "Critical Thinking", "minimum_score": 65, "weightage": 15},
+
+            {"career": "Cloud Engineer", "skill": "Python Programming", "minimum_score": 65, "weightage": 35},
+            {"career": "Cloud Engineer", "skill": "Problem Solving", "minimum_score": 70, "weightage": 35},
+            {"career": "Cloud Engineer", "skill": "Communication", "minimum_score": 60, "weightage": 30},
+            {"career": "Cybersecurity Analyst", "skill": "Problem Solving", "minimum_score": 75, "weightage": 40},
+            {"career": "Cybersecurity Analyst", "skill": "Critical Thinking", "minimum_score": 75, "weightage": 35},
+            {"career": "Cybersecurity Analyst", "skill": "Communication", "minimum_score": 60, "weightage": 25},
+            {"career": "UI UX Designer", "skill": "Communication", "minimum_score": 70, "weightage": 40},
+            {"career": "UI UX Designer", "skill": "Critical Thinking", "minimum_score": 65, "weightage": 35},
+            {"career": "UI UX Designer", "skill": "Teamwork", "minimum_score": 65, "weightage": 25},
+            {"career": "Mobile App Developer", "skill": "JavaScript", "minimum_score": 70, "weightage": 40},
+            {"career": "Mobile App Developer", "skill": "React.js", "minimum_score": 70, "weightage": 35},
+            {"career": "Mobile App Developer", "skill": "Problem Solving", "minimum_score": 65, "weightage": 25},
+            {"career": "Data Engineer", "skill": "SQL", "minimum_score": 75, "weightage": 40},
+            {"career": "Data Engineer", "skill": "Python Programming", "minimum_score": 70, "weightage": 35},
+            {"career": "Data Engineer", "skill": "Data Analysis", "minimum_score": 65, "weightage": 25},
+            {"career": "Machine Learning Engineer", "skill": "Machine Learning", "minimum_score": 80, "weightage": 40},
+            {"career": "Machine Learning Engineer", "skill": "Python Programming", "minimum_score": 75, "weightage": 35},
+            {"career": "Machine Learning Engineer", "skill": "Data Analysis", "minimum_score": 70, "weightage": 25},
+            {"career": "Quality Assurance Engineer", "skill": "Problem Solving", "minimum_score": 70, "weightage": 40},
+            {"career": "Quality Assurance Engineer", "skill": "Critical Thinking", "minimum_score": 70, "weightage": 35},
+            {"career": "Quality Assurance Engineer", "skill": "Communication", "minimum_score": 65, "weightage": 25},
+            {"career": "API Engineer", "skill": "Django", "minimum_score": 70, "weightage": 35},
+            {"career": "API Engineer", "skill": "SQL", "minimum_score": 70, "weightage": 35},
+            {"career": "API Engineer", "skill": "Problem Solving", "minimum_score": 70, "weightage": 30},
+            {"career": "Technical Product Manager", "skill": "Project Management", "minimum_score": 75, "weightage": 40},
+            {"career": "Technical Product Manager", "skill": "Communication", "minimum_score": 75, "weightage": 35},
+            {"career": "Technical Product Manager", "skill": "Leadership", "minimum_score": 70, "weightage": 25},
+            {"career": "Solutions Architect", "skill": "Problem Solving", "minimum_score": 80, "weightage": 40},
+            {"career": "Solutions Architect", "skill": "Communication", "minimum_score": 75, "weightage": 30},
+            {"career": "Solutions Architect", "skill": "Leadership", "minimum_score": 70, "weightage": 30},
         ]
 
         for data in career_skills_data:
@@ -454,6 +556,37 @@ class Command(BaseCommand):
             {"career": "Business Analyst", "course": "Critical Thinking Mastery", "sequence": 2},
             {"career": "Business Analyst", "course": "Data Analysis with Python", "sequence": 3},
             {"career": "Business Analyst", "course": "Project Management Pro", "sequence": 4},
+
+            {"career": "Cloud Engineer", "course": "Python Fundamentals", "sequence": 1},
+            {"career": "Cloud Engineer", "course": "Cloud Computing Foundations", "sequence": 2},
+            {"career": "Cloud Engineer", "course": "DevOps and CI CD", "sequence": 3},
+            {"career": "Cybersecurity Analyst", "course": "Python Fundamentals", "sequence": 1},
+            {"career": "Cybersecurity Analyst", "course": "Cybersecurity Essentials", "sequence": 2},
+            {"career": "Cybersecurity Analyst", "course": "Cloud Computing Foundations", "sequence": 3},
+            {"career": "UI UX Designer", "course": "Effective Communication", "sequence": 1},
+            {"career": "UI UX Designer", "course": "UI UX Design Fundamentals", "sequence": 2},
+            {"career": "UI UX Designer", "course": "React.js Mastery", "sequence": 3},
+            {"career": "Mobile App Developer", "course": "JavaScript Essentials", "sequence": 1},
+            {"career": "Mobile App Developer", "course": "React.js Mastery", "sequence": 2},
+            {"career": "Mobile App Developer", "course": "Mobile Apps with React Native", "sequence": 3},
+            {"career": "Data Engineer", "course": "SQL for Data", "sequence": 1},
+            {"career": "Data Engineer", "course": "Data Analysis with Python", "sequence": 2},
+            {"career": "Data Engineer", "course": "Data Engineering Foundations", "sequence": 3},
+            {"career": "Machine Learning Engineer", "course": "Python Fundamentals", "sequence": 1},
+            {"career": "Machine Learning Engineer", "course": "Machine Learning Basics", "sequence": 2},
+            {"career": "Machine Learning Engineer", "course": "AI Product Development", "sequence": 3},
+            {"career": "Quality Assurance Engineer", "course": "Critical Thinking Mastery", "sequence": 1},
+            {"career": "Quality Assurance Engineer", "course": "Software Testing Automation", "sequence": 2},
+            {"career": "Quality Assurance Engineer", "course": "REST API Engineering", "sequence": 3},
+            {"career": "API Engineer", "course": "Python Fundamentals", "sequence": 1},
+            {"career": "API Engineer", "course": "Django Full Stack", "sequence": 2},
+            {"career": "API Engineer", "course": "REST API Engineering", "sequence": 3},
+            {"career": "Technical Product Manager", "course": "Effective Communication", "sequence": 1},
+            {"career": "Technical Product Manager", "course": "Project Management Pro", "sequence": 2},
+            {"career": "Technical Product Manager", "course": "AI Product Development", "sequence": 3},
+            {"career": "Solutions Architect", "course": "Cloud Computing Foundations", "sequence": 1},
+            {"career": "Solutions Architect", "course": "REST API Engineering", "sequence": 2},
+            {"career": "Solutions Architect", "course": "DevOps and CI CD", "sequence": 3},
         ]
 
         for data in career_paths_data:
@@ -533,7 +666,7 @@ class Command(BaseCommand):
                 "passing_score": 60,
                 "max_attempts": 2,
                 "assessment_type": "course_placement",
-                "target_level": "all_levels",
+                "target_level": "beginner",
                 "assessment_phase": "placement",
                 "time_minutes": 45,
                 "is_active": True,
@@ -594,7 +727,7 @@ class Command(BaseCommand):
                 "max_attempts": 2,
                 "assessment_type": "course_final",
                 "target_level": "beginner",
-                "assessment_phase": "completion",
+                "assessment_phase": "final",
                 "time_minutes": 60,
                 "is_active": True,
                 "questions": [
@@ -626,7 +759,7 @@ class Command(BaseCommand):
                 "max_attempts": 3,
                 "assessment_type": "skill_assessment",
                 "target_level": "intermediate",
-                "assessment_phase": "skill_evaluation",
+                "assessment_phase": "placement",
                 "time_minutes": 75,
                 "is_active": True,
                 "questions": [
@@ -741,10 +874,197 @@ class Command(BaseCommand):
                 defaults={"weightage": data["weightage"], "question_count": data["question_count"]}
             )
             print(f"  [{'Created' if created else 'Exists'}] AssessmentSkill: {fullstack_skill.title} -> {skill.name}")
+
         # =============================================================================
-        # 9. TEST STUDENT
+        # 9. TEN ADDITIONAL COURSE ASSESSMENTS
         # =============================================================================
-        print("\n[9/8] Creating Test Student...")
+        print("\n[9/13] Creating additional course assessments...")
+
+        additional_assessments = [
+            ("Cloud Foundations Readiness", "Cloud Computing Foundations", "Python Programming"),
+            ("DevOps Pipeline Assessment", "DevOps and CI CD", "Problem Solving"),
+            ("Cybersecurity Essentials Check", "Cybersecurity Essentials", "Critical Thinking"),
+            ("UI UX Foundations Review", "UI UX Design Fundamentals", "Communication"),
+            ("REST API Engineering Review", "REST API Engineering", "Django"),
+            ("React Native Development Review", "Mobile Apps with React Native", "React.js"),
+            ("Data Engineering Readiness", "Data Engineering Foundations", "SQL"),
+            ("AI Product Development Review", "AI Product Development", "Machine Learning"),
+            ("Test Automation Assessment", "Software Testing Automation", "Problem Solving"),
+            ("Technical Interview Readiness", "Technical Interview Preparation", "Critical Thinking"),
+        ]
+        for title, course_title, skill_name in additional_assessments:
+            skill = created_skills[skill_name]
+            assessment, created = Assessment.objects.get_or_create(
+                title=title,
+                defaults={
+                    "description": f"Measure practical readiness for {course_title}.",
+                    "course": created_courses[course_title],
+                    "passing_score": 65,
+                    "max_attempts": 3,
+                    "assessment_type": "course_quiz",
+                    "target_level": created_courses[course_title].level,
+                    "assessment_phase": "progress",
+                    "time_minutes": 20,
+                    "is_active": True,
+                    "questions": [
+                        {
+                            "id": 1,
+                            "skill_id": skill.id,
+                            "text": f"Which practice is most important when applying {skill_name} in a real project?",
+                            "options": [
+                                "Validate requirements and test the result",
+                                "Skip documentation",
+                                "Avoid feedback",
+                                "Deploy without review",
+                            ],
+                            "correct_answer": "Validate requirements and test the result",
+                        },
+                        {
+                            "id": 2,
+                            "skill_id": skill.id,
+                            "text": "What should you do first when a technical solution fails?",
+                            "options": [
+                                "Reproduce and inspect the failure",
+                                "Hide the error",
+                                "Rewrite everything immediately",
+                                "Ignore monitoring data",
+                            ],
+                            "correct_answer": "Reproduce and inspect the failure",
+                        },
+                        {
+                            "id": 3,
+                            "skill_id": skill.id,
+                            "text": "Which approach produces the most maintainable result?",
+                            "options": [
+                                "Small reviewed changes with automated checks",
+                                "One unreviewed large change",
+                                "No version control",
+                                "Manual testing only",
+                            ],
+                            "correct_answer": "Small reviewed changes with automated checks",
+                        },
+                    ],
+                },
+            )
+            AssessmentSkill.objects.get_or_create(
+                assessment=assessment,
+                skill=skill,
+                defaults={"weightage": 100, "question_count": 3},
+            )
+            print(f"  [{'Created' if created else 'Exists'}] Assessment: {assessment.title}")
+
+        # =============================================================================
+        # 10. MENTORS AND COUNSELORS
+        # =============================================================================
+        print("\n[10/13] Creating mentors and counselors...")
+
+        mentor_data = [
+            ("mentor_cloud", "cloud.mentor@test.com", "Aarav", "Shrestha", "Cloud and DevOps", 8, ["Python Programming", "Problem Solving"]),
+            ("mentor_security", "security.mentor@test.com", "Nisha", "Karki", "Cybersecurity", 7, ["Critical Thinking", "Problem Solving"]),
+            ("mentor_design", "design.mentor@test.com", "Suman", "Rai", "UI UX and Frontend", 6, ["React.js", "Communication"]),
+            ("mentor_data", "data.mentor@test.com", "Priya", "Gurung", "Data Engineering and ML", 9, ["SQL", "Data Analysis", "Machine Learning"]),
+            ("mentor_quality", "quality.mentor@test.com", "Rohan", "Thapa", "APIs and Quality Engineering", 7, ["Django", "Problem Solving"]),
+        ]
+        created_mentors = []
+        for index, (username, email, first_name, last_name, expertise, years, skill_names) in enumerate(mentor_data, 1):
+            mentor, created = User.objects.get_or_create(
+                username=username,
+                defaults={
+                    "email": email,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "phone": f"98000010{index:02d}",
+                    "role": "mentor",
+                    "is_active": True,
+                },
+            )
+            if created:
+                mentor.set_password("Mentor@123")
+                mentor.save()
+            profile, _ = MentorProfile.objects.get_or_create(
+                mentor=mentor,
+                defaults={
+                    "expertise_area": expertise,
+                    "years_of_experience": years,
+                    "bio": f"Experienced mentor specializing in {expertise}.",
+                    "address": "Kathmandu, Nepal",
+                },
+            )
+            profile.skills.set([created_skills[name] for name in skill_names])
+            created_mentors.append(mentor)
+            print(f"  [{'Created' if created else 'Exists'}] Mentor: {mentor.username}")
+
+        counselor_data = [
+            ("counselor_career", "career.counselor@test.com", "Anita", "Joshi", "Career Planning", 8),
+            ("counselor_academic", "academic.counselor@test.com", "Bikash", "Adhikari", "Academic Guidance", 6),
+            ("counselor_wellbeing", "wellbeing.counselor@test.com", "Maya", "Tamang", "Student Wellbeing", 9),
+            ("counselor_placement", "placement.counselor@test.com", "Kiran", "Pandey", "Placement Preparation", 7),
+            ("counselor_skills", "skills.counselor@test.com", "Rita", "Lama", "Skills Development", 5),
+        ]
+        for index, (username, email, first_name, last_name, specialization, years) in enumerate(counselor_data, 1):
+            counselor, created = User.objects.get_or_create(
+                username=username,
+                defaults={
+                    "email": email,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "phone": f"98000020{index:02d}",
+                    "role": "counselor",
+                    "is_active": True,
+                },
+            )
+            if created:
+                counselor.set_password("Counselor@123")
+                counselor.save()
+            CounselorProfile.objects.get_or_create(
+                counselor=counselor,
+                defaults={
+                    "specialization": specialization,
+                    "years_of_experience": years,
+                    "bio": f"Student counselor focused on {specialization}.",
+                    "address": "Kathmandu, Nepal",
+                },
+            )
+            print(f"  [{'Created' if created else 'Exists'}] Counselor: {counselor.username}")
+
+        # =============================================================================
+        # 11. SCHEDULED COURSE BATCHES
+        # =============================================================================
+        print("\n[11/13] Creating scheduled course batches...")
+        scheduled_courses = [course_title for _, course_title, _ in additional_assessments]
+        weekdays = [("Sunday", "07:00", "09:00"), ("Monday", "18:00", "20:00"), ("Wednesday", "18:00", "20:00"), ("Friday", "17:30", "19:30")]
+        today = date.today()
+        for index, course_title in enumerate(scheduled_courses):
+            course = created_courses[course_title]
+            first_day, first_start, first_end = weekdays[index % len(weekdays)]
+            second_day, second_start, second_end = weekdays[(index + 2) % len(weekdays)]
+            start_date = today + timedelta(days=7 + index * 3)
+            end_date = start_date + (course.duration or timedelta(weeks=6))
+            batch, created = CourseBatch.objects.get_or_create(
+                batch_code=f"{course.prefix}-2026-{index + 1:02d}",
+                defaults={
+                    "course": course,
+                    "status": "upcoming",
+                    "start_date": start_date,
+                    "end_date": end_date,
+                    "max_seats": 25,
+                    "current_enrollments": 0,
+                    "mentor": created_mentors[index % len(created_mentors)],
+                    "schedule": {
+                        "timezone": "Asia/Kathmandu",
+                        "sessions": [
+                            {"day": first_day, "start": first_start, "end": first_end, "mode": "online"},
+                            {"day": second_day, "start": second_start, "end": second_end, "mode": "online"},
+                        ],
+                    },
+                },
+            )
+            print(f"  [{'Created' if created else 'Exists'}] Batch: {batch.batch_code}")
+
+        # =============================================================================
+        # 12. TEST STUDENT
+        # =============================================================================
+        print("\n[12/13] Creating Test Student...")
 
         student, created = User.objects.get_or_create(
             username="student1",
@@ -764,7 +1084,7 @@ class Command(BaseCommand):
         print(f"  [{status}] Student: {student.username} / Password: Student@123")
         
         
-        print("\n[10/8] Creating Superuser...")
+        print("\n[13/13] Creating Superuser...")
         
         superuser, created = User.objects.get_or_create(
                 username="admin",
@@ -772,7 +1092,7 @@ class Command(BaseCommand):
                     "email": "admin@admin.com",
                     "first_name": "Admin",
                     "last_name": "User",
-                    "role": "superadmin",
+                    "role": "super_admin",
                     "is_active": True,
                     "is_staff": True,
                     "is_superuser": True,
@@ -781,7 +1101,11 @@ class Command(BaseCommand):
             # Always set/reset password
         if created:
             superuser.set_password("admin")
-            superuser.save()
+        superuser.role = "super_admin"
+        superuser.is_active = True
+        superuser.is_staff = True
+        superuser.is_superuser = True
+        superuser.save()
         status = "Created" if created else "Updated password"
         print(f"  [{status}] Superuser: {superuser.username} / Email: {superuser.email} / Password: admin")
 
@@ -799,6 +1123,9 @@ class Command(BaseCommand):
         print(f"Career Paths:    {CareerPath.objects.count()}")
         print(f"Assessments:     {Assessment.objects.count()}")
         print(f"Assessment Skills: {AssessmentSkill.objects.count()}")
+        print(f"Batches:         {CourseBatch.objects.count()}")
+        print(f"Mentors:         {User.objects.filter(role='mentor').count()}")
+        print(f"Counselors:      {User.objects.filter(role='counselor').count()}")
         print(f"Test Student:    student1 / Student@123")
         print(f"Superuser:       admin / admin@admin.com / Password: admin")
         print("=" * 60)

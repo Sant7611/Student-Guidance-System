@@ -19,7 +19,9 @@ class CounselorViewSet(viewsets.ModelViewSet):
         return User.objects.filter(
             role='counselor',
             is_deleted=False
-        ).select_related('counselor_profile')
+        ).select_related('counselor_profile').prefetch_related(
+            'counselor_students__student'
+        )
 
     def get_serializer_class(self):
         if self.action == 'register':

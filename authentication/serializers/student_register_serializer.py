@@ -18,7 +18,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         model = StudentProfile
         fields = [
             'education_level', 'preferred_learning_mode', 'career',
-            'bio', 'address', 'birth_date'
+            'bio', 'image', 'address', 'birth_date'
         ]
 
 
@@ -62,11 +62,12 @@ class StudentRegisterSerializer(serializers.ModelSerializer):
 class StudentUpdateSerializer(serializers.ModelSerializer):
     """Read-update serializer for existing students"""
     profile = StudentProfileSerializer(source='student_profile', required=False)
+    enrollments = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name',
-                  'phone', 'profile']
+                  'phone', 'profile', 'enrollments']
         read_only_fields = ['id', 'username']
     
     @transaction.atomic
@@ -82,6 +83,39 @@ class StudentUpdateSerializer(serializers.ModelSerializer):
             )
         
         return instance
+
+    def get_enrollments(self, obj):
+        enrollments = obj.enrollments.filter(is_deleted=False).select_related(
+            'batch__course', 'batch__mentor'
+        )
+        return [
+            {
+                'id': enrollment.id,
+                'payment_status': enrollment.payment_status,
+                'enrolled_at': enrollment.enrolled_at,
+                'batch': {
+                    'id': enrollment.batch_id,
+                    'batch_code': enrollment.batch.batch_code,
+                    'status': enrollment.batch.status,
+                    'start_date': enrollment.batch.start_date,
+                    'end_date': enrollment.batch.end_date,
+                    'schedule': enrollment.batch.schedule,
+                    'course': {
+                        'id': enrollment.batch.course_id,
+                        'title': enrollment.batch.course.title,
+                    },
+                    'mentor': (
+                        {
+                            'id': enrollment.batch.mentor_id,
+                            'username': enrollment.batch.mentor.username,
+                            'full_name': enrollment.batch.mentor.full_name,
+                        }
+                        if enrollment.batch.mentor else None
+                    ),
+                },
+            }
+            for enrollment in enrollments
+        ]
 
 
 class StudentUserMiniSerializer(serializers.ModelSerializer):

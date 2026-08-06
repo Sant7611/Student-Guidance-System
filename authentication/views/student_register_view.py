@@ -20,7 +20,9 @@ class StudentViewSet(viewsets.ModelViewSet):
         return User.objects.filter(
             role='student',
             is_deleted=False
-        ).select_related('student_profile')
+        ).select_related('student_profile').prefetch_related(
+            'enrollments__batch__course', 'enrollments__batch__mentor'
+        )
 
     def get_serializer_class(self):
         if self.action == 'register':

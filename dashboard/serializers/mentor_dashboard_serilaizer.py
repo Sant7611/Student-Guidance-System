@@ -14,7 +14,8 @@ class MentorBatchSerializer(serializers.ModelSerializer):
     course = GetMiniCourseSerializer(read_only=True)
     class Meta:
         model = CourseBatch
-        fields=['id', 'students','status', 'current_enrollments','schedule', 'course' ]
+        fields=['id', 'batch_code', 'students', 'status', 'start_date', 'end_date',
+                'current_enrollments', 'max_seats', 'schedule', 'course']
     
     
     def get_students(self, batch):

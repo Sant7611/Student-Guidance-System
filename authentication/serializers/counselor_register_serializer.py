@@ -56,11 +56,12 @@ class CounselorRegisterSerializer(serializers.ModelSerializer):
 class CounselorUpdateSerializer(serializers.ModelSerializer):
     """Read-update serializer for existing counselors"""
     profile = CounselorProfileSerializer(source='counselor_profile', required=False)
+    counseling_assignments = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name',
-                  'phone', 'profile']
+                  'phone', 'profile', 'counseling_assignments']
         read_only_fields = ['id', 'username']
     
     @transaction.atomic
@@ -76,6 +77,24 @@ class CounselorUpdateSerializer(serializers.ModelSerializer):
             )
         
         return instance
+
+    def get_counseling_assignments(self, obj):
+        assignments = obj.counselor_students.filter(
+            is_deleted=False, is_active=True
+        ).select_related('student')
+        return [
+            {
+                'id': assignment.id,
+                'student': {
+                    'id': assignment.student_id,
+                    'username': assignment.student.username,
+                    'full_name': assignment.student.full_name,
+                    'email': assignment.student.email,
+                },
+                'assigned_at': assignment.assigned_at,
+            }
+            for assignment in assignments
+        ]
 
 
 class CounselorUserMiniSerializer(serializers.ModelSerializer):

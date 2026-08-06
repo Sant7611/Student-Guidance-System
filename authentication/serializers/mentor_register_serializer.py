@@ -65,11 +65,12 @@ class MentorRegisterSerializer(serializers.ModelSerializer):
 class MentorUpdateSerializer(serializers.ModelSerializer):
     """Read-update serializer for existing mentors"""
     profile = MentorProfileSerializer(source='mentor_profile', required=False)
+    mentored_batches = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name',
-                  'phone', 'profile']
+                  'phone', 'profile', 'mentored_batches']
         read_only_fields = ['id', 'username']
     
     @transaction.atomic
@@ -88,6 +89,23 @@ class MentorUpdateSerializer(serializers.ModelSerializer):
                 mentor_profile.skills.set(skills)
         
         return instance
+
+    def get_mentored_batches(self, obj):
+        batches = obj.mentored_batches.filter(is_deleted=False).select_related('course')
+        return [
+            {
+                'id': batch.id,
+                'batch_code': batch.batch_code,
+                'status': batch.status,
+                'start_date': batch.start_date,
+                'end_date': batch.end_date,
+                'schedule': batch.schedule,
+                'current_enrollments': batch.current_enrollments,
+                'max_seats': batch.max_seats,
+                'course': {'id': batch.course_id, 'title': batch.course.title},
+            }
+            for batch in batches
+        ]
 
 
 class MentorUserMiniSerializer(serializers.ModelSerializer):
