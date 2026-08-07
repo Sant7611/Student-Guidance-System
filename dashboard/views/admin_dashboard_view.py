@@ -167,7 +167,7 @@ class AdminDashboardView(generics.GenericAPIView):
             .prefetch_related(
                 Prefetch(
                     "enrollments",
-                    queryset=Enrollment.objects.select_related("student"),
+                    queryset=Enrollment.objects.filter(is_deleted=False).select_related("student"),
                 )
             )
             .order_by("-created_at")[:8]

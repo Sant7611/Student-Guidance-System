@@ -26,7 +26,8 @@ class MentorDashboardView(generics.GenericAPIView):
             .select_related("course")
             .prefetch_related(
                 Prefetch(
-                    "enrollments", queryset=Enrollment.objects.select_related("student")
+                    "enrollments",
+                    queryset=Enrollment.objects.filter(is_deleted=False).select_related("student"),
                 )
             )
         )

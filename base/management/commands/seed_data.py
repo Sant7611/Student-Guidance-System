@@ -323,6 +323,14 @@ class Command(BaseCommand):
             if created:
                 for cat_title in category_titles:
                     obj.categories.add(created_categories[cat_title])
+            else:
+                # Keep reruns idempotent while repairing catalog metadata for
+                # courses created by an older version of this seed command.
+                for field, value in data.items():
+                    if field != 'title' and getattr(obj, field) != value:
+                        setattr(obj, field, value)
+                obj.save()
+                obj.categories.set([created_categories[cat_title] for cat_title in category_titles])
             created_courses[data["title"]] = obj
             status = "Created" if created else "Exists"
             print(f"  [{status}] Course: {obj.title}")
@@ -1059,6 +1067,19 @@ class Command(BaseCommand):
                     },
                 },
             )
+            if not created:
+                batch.course = course
+                batch.start_date = start_date
+                batch.end_date = end_date
+                batch.mentor = created_mentors[index % len(created_mentors)]
+                batch.schedule = {
+                    "timezone": "Asia/Kathmandu",
+                    "sessions": [
+                        {"day": first_day, "start": first_start, "end": first_end, "mode": "online"},
+                        {"day": second_day, "start": second_start, "end": second_end, "mode": "online"},
+                    ],
+                }
+                batch.save(update_fields=['course', 'start_date', 'end_date', 'mentor', 'schedule', 'updated_at'])
             print(f"  [{'Created' if created else 'Exists'}] Batch: {batch.batch_code}")
 
         # =============================================================================

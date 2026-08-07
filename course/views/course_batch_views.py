@@ -4,11 +4,18 @@ from course.models import CourseBatch
 from utils.permissions import AdminOnlyPost
 from notifications.services import NotificationService
 from django.core.cache import cache
+from django.db.models import Prefetch
+from enrollment.models import Enrollment
 
 class CourseBatchView(viewsets.ModelViewSet):
     permission_classes = [AdminOnlyPost]
     serializer_class = CourseBatchSerializer
-    queryset = CourseBatch.objects.all().select_related('course')
+    queryset = CourseBatch.objects.all().select_related('course', 'mentor').prefetch_related(
+        Prefetch(
+            'enrollments',
+            queryset=Enrollment.objects.filter(is_deleted=False).select_related('student'),
+        )
+    )
     ordering = ["-created_at"]
 
     def _invalidate_batch_caches(self, instance, extra_mentor_id=None):

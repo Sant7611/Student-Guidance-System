@@ -12,7 +12,7 @@ class AdminStudentMiniSerializer(serializers.ModelSerializer):
     """Lightweight — no profile lookups, avoids N+1."""
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'full_name']
+        fields = ['id', 'username', 'first_name', 'last_name', 'full_name', 'email', 'phone', 'role']
 
 
 class AdminBatchDetailSerializer(serializers.ModelSerializer):
