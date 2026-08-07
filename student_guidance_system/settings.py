@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     'assessment',
     'drf_yasg',
     'django_celery_results',
+    'cloudinary_storage',
+    'cloudinary',
     'dashboard',
     'notifications',
 ]
@@ -292,6 +294,15 @@ STATIC_URL = 'static/'
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 
 # REDIS_HOST = config('REDIS_HOST', default='redis')
