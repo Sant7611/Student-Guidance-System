@@ -13,13 +13,17 @@ class MentorProfileSerializer(serializers.ModelSerializer):
         many=True,
         required=False
     )
+    skill_details = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = MentorProfile
         fields = [
             'expertise_area', 'years_of_experience', 'skills',
-            'bio', 'image', 'address', 'birth_date'
+            'skill_details', 'bio', 'image', 'address', 'birth_date'
         ]
+
+    def get_skill_details(self, obj):
+        return [{'id': skill.id, 'name': skill.name} for skill in obj.skills.all()]
 
 
 class MentorRegisterSerializer(serializers.ModelSerializer):
